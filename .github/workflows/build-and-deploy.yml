@@ -28,9 +28,6 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
-      - name: Build project
-        run: npm run build
-
       - name: Extract UPLOAD_MODE from .env
         run: |
           UPLOAD_MODE=$(grep '^[^#]*UPLOAD_MODE' .env | cut -d '=' -f2)
@@ -39,6 +36,14 @@ jobs:
             exit 1
           fi
           echo "UPLOAD_MODE=$UPLOAD_MODE" >> $GITHUB_ENV
+
+      - name: Build project
+        run: npm run build
+
+      - name: Copy built files to docs
+        if: ${{ env.UPLOAD_MODE == 'GH_PAGES' }}
+        run: |
+          cp -r dist/* docs/
 
       - name: Set up Environment Variables
         if: ${{ env.UPLOAD_MODE == 'MAP_STORAGE' }}
@@ -88,6 +93,6 @@ jobs:
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BRANCH: gh-pages
-          FOLDER: dist/
+          FOLDER: docs/
           BASE_BRANCH: master
 
